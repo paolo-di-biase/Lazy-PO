@@ -56,6 +56,8 @@ endif
 
 util.dir: big-int.dir
 
+CXXFLAGS += -Isrc
+
 # everything but big-int depends on util
 $(patsubst %, %.dir, $(filter-out big-int util, $(DIRS))): util.dir
 

@@ -178,6 +178,7 @@ void run_property_decider(
   "(show-goto-symex-steps)" \
   "(show-points-to-sets)" \
   "(slice-formula)" \
+  "(lazy-c-seq-rounds):" \
   "(unwinding-assertions)" \
   "(no-unwinding-assertions)" \
   "(mm-strict-guard)" \
@@ -220,6 +221,8 @@ void run_property_decider(
   "this is\n" \
   "                              equivalent to setting the maximum field \n" \
   "                              sensitivity size for arrays to 0\n" \
+  " --lazy-c-seq-rounds {unr}    activate LazyCSeq concurrency encoding with \n" \
+  "                              {unr} rounds\n"   \
   HELP_UNWINDSET \
   " --incremental-loop L         check properties after each unwinding\n" \
   "                              of loop L\n" \

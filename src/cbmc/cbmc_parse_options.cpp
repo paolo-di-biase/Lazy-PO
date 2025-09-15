@@ -130,6 +130,16 @@ void cbmc_parse_optionst::get_command_line_options(optionst &options)
   if(cmdline.isset("function"))
     options.set_option("function", cmdline.get_value("function"));
 
+  if(cmdline.isset("lazy-c-seq-rounds"))
+  {
+    options.set_option(
+      "lazy-c-seq-rounds", cmdline.get_value("lazy-c-seq-rounds"));
+    log.warning() << "**** WARNING: Context-bounded analysis may yield unsound "
+                     "verification "
+                     "results"
+                  << messaget::eom;
+  }
+
   if(cmdline.isset("cover") && cmdline.isset("unwinding-assertions"))
   {
     log.error()
