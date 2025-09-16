@@ -20,6 +20,8 @@ Author: Daniel Kroening, Peter Schrammel
 
 #include <iostream>
 
+#include "../util/options.h"
+
 #ifdef _MSC_VER
 #include <util/unicode.h>
 #endif
@@ -151,6 +153,8 @@ std::unique_ptr<solver_factoryt::solvert> solver_factoryt::get_solver()
     return get_incremental_smt2(incremental_smt2_solver);
   if(options.get_bool_option("smt2"))
     return get_smt2(get_smt2_solver_type());
+  if(options.get_bool_option("minisat"))
+    return get_minisat();
   return get_default();
 }
 
@@ -210,6 +214,46 @@ make_satcheck_prop(message_handlert &message_handler, const optionst &options)
 }
 
 #include "solvers/sat/satcheck_minisat2.h"
+
+static std::unique_ptr<propt>
+get_sat_solver(message_handlert &message_handler, const optionst &options)
+{
+  const bool no_simplifier = options.get_bool_option("beautify") ||
+                             !options.get_bool_option("sat-preprocessor") ||
+                             options.get_bool_option("refine-arithmetic") ||
+                             options.get_bool_option("refine-strings");
+
+  if(no_simplifier)
+  {
+    // simplifier won't work with beautification
+    return make_satcheck_prop<satcheck_no_simplifiert>(
+      message_handler, options);
+  }
+  else // with simplifier
+  {
+    return make_satcheck_prop<satcheckt>(message_handler, options);
+  }
+}
+
+std::unique_ptr<solver_factoryt::solvert> solver_factoryt::get_minisat()
+{
+  auto sat_solver = get_sat_solver(message_handler, options);
+
+  bool get_array_constraints =
+    options.get_bool_option("show-array-constraints");
+  auto bv_pointers = std::make_unique<bv_pointerst>(
+    ns, *sat_solver, message_handler, get_array_constraints);
+
+  if(options.get_option("arrays-uf") == "never")
+    bv_pointers->unbounded_array = bv_pointerst::unbounded_arrayt::U_NONE;
+  else if(options.get_option("arrays-uf") == "always")
+    bv_pointers->unbounded_array = bv_pointerst::unbounded_arrayt::U_ALL;
+
+  set_decision_procedure_time_limit(*bv_pointers);
+
+  std::unique_ptr<boolbvt> boolbv = std::move(bv_pointers);
+  return std::make_unique<solvert>(std::move(boolbv), std::move(sat_solver));
+}
 
 std::unique_ptr<solver_factoryt::solvert> solver_factoryt::get_default()
 {
@@ -505,6 +549,9 @@ static void parse_sat_options(const cmdlinet &cmdline, optionst &options)
     options.set_option(
       "external-sat-solver", cmdline.get_value("external-sat-solver"));
   }
+
+  if(cmdline.isset("minisat"))
+    options.set_option("minisat", true);
 
   options.set_option("sat-preprocessor", !cmdline.isset("no-sat-preprocessor"));
 

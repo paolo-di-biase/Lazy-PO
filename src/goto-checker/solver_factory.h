@@ -72,6 +72,7 @@ protected:
   const bool output_xml_in_refinement;
 
   std::unique_ptr<solvert> get_default();
+  std::unique_ptr<solvert> get_minisat();
   std::unique_ptr<solvert> get_dimacs();
   std::unique_ptr<solvert> get_external_sat();
   std::unique_ptr<solvert> get_bv_refinement();
@@ -98,6 +99,7 @@ void parse_solver_options(const cmdlinet &cmdline, optionst &options);
 
 #define OPT_SOLVER                                                             \
   "(smt1)" /* rejected, will eventually disappear */                           \
+  "(minisat)"                                                                     \
   "(smt2)"                                                                     \
   "(fpa)"                                                                      \
   "(cvc3)"                                                                     \
@@ -117,6 +119,7 @@ void parse_solver_options(const cmdlinet &cmdline, optionst &options);
   "(write-solver-stats-to):"
 
 #define HELP_SOLVER                                                            \
+  " --minisat                    command to invoke MINISAT solver process\n"   \
   " --external-sat-solver cmd    command to invoke SAT solver process\n"       \
   " --no-sat-preprocessor        disable the SAT solver's simplifier\n"        \
   " --dimacs                     generate CNF in DIMACS format\n"              \

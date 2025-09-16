@@ -439,70 +439,80 @@ std::chrono::duration<double> prepare_property_decider(
   property_decider.convert_goals();
 
   // __SZH_ADD_BEGIN__
-  if(equation.use_cat)
+  auto &prop_solver = property_decider.get_solver()->prop();
+
+  // memory-model solver (se presente)
+  if (auto *memory_model_solver = dynamic_cast<memory_model_solvert*>(&prop_solver))
   {
-    auto& memory_model_solver = *(memory_model_solvert*)(&(property_decider.get_solver()->prop()));
-    auto& decision_procedure = *(prop_conv_solvert*)(&(property_decider.get_decision_procedure()));
-
-    std::cout << "Set Deagle memory model solver's graph\n";
-
-    //set graph
-    oc_edge_tablet oc_edge_table;
-    for(auto& edge: equation.oc_edges)
+    if(equation.use_cat)
     {
-      literalt expr = decision_procedure.convert(edge.expr);
-      Minisat::Lit expr_final = Minisat::mkLit(expr.var_no(), expr.sign());
-      oc_edge_table.push_back(std::make_pair(std::make_pair(edge.e1_str, edge.e2_str), std::make_pair(expr_final, edge.kind)));
+      auto *decision_procedure =
+        dynamic_cast<prop_conv_solvert*>(&property_decider.get_decision_procedure());
+      if(!decision_procedure)
+        throw std::runtime_error("Expected prop_conv_solvert for decision_procedure");
 
-      //std::cout << edge.e1_str << " " << edge.e2_str << ": " << edge.kind << "\n";
+      std::cout << "Set Deagle memory model solver's graph\n";
+
+      oc_edge_tablet oc_edge_table;
+      for(const auto &edge : equation.oc_edges)
+      {
+        literalt expr = decision_procedure->convert(edge.expr);
+        Minisat::Lit expr_final = Minisat::mkLit(expr.var_no(), expr.sign());
+        oc_edge_table.push_back(
+          std::make_pair(std::make_pair(edge.e1_str, edge.e2_str),
+                         std::make_pair(expr_final, edge.kind)));
+      }
+
+      oc_label_tablet oc_label_table;
+      for(const auto &label : equation.oc_labels)
+      {
+        literalt expr = decision_procedure->convert(label.expr);
+        Minisat::Lit expr_final = Minisat::mkLit(expr.var_no(), expr.sign());
+        oc_label_table.push_back(
+          std::make_pair(label.e_str, std::make_pair(expr_final, label.label)));
+      }
+
+      // Usare -> perché memory_model_solver è pointer
+      memory_model_solver->save_raw_graph(oc_edge_table, oc_label_table, equation.cat);
     }
-
-    oc_label_tablet oc_label_table;
-    for(auto& label: equation.oc_labels)
-    {
-      literalt expr = decision_procedure.convert(label.expr);
-      Minisat::Lit expr_final = Minisat::mkLit(expr.var_no(), expr.sign());
-      oc_label_table.push_back(std::make_pair(label.e_str, std::make_pair(expr_final, label.label)));
-
-      //std::cout << label.e_str << ": " << label.label << "\n";
-    }
-
-    memory_model_solver.save_raw_graph(oc_edge_table, oc_label_table, equation.cat);
-    //deagle_solver.init();
   }
-  else
+
+  // deagle solver (se presente)
+  if (auto *deagle_solver = dynamic_cast<deagle_solvert*>(&prop_solver))
   {
-    auto& deagle_solver = *(deagle_solvert*)(&(property_decider.get_solver()->prop()));
-    auto& decision_procedure = *(prop_conv_solvert*)(&(property_decider.get_decision_procedure()));
+    auto *decision_procedure =
+      dynamic_cast<prop_conv_solvert*>(&property_decider.get_decision_procedure());
+    if(!decision_procedure)
+      throw std::runtime_error("Expected prop_conv_solvert for decision_procedure");
 
     std::cout << "Set Deagle solver's graph\n";
 
-    //set graph
     oc_edge_tablet oc_edge_table;
-
-    for(auto& edge: equation.oc_edges)
+    for(const auto &edge : equation.oc_edges)
     {
-      literalt expr = decision_procedure.convert(edge.expr);
+      literalt expr = decision_procedure->convert(edge.expr);
       Minisat::Lit expr_final = Minisat::mkLit(expr.var_no(), expr.sign());
-      oc_edge_table.push_back(std::make_pair(std::make_pair(edge.e1_str, edge.e2_str), std::make_pair(expr_final, edge.kind)));
-
-      //std::cout << edge.e1_str << " " << edge.e2_str << ": " << edge.kind << "\n";
+      oc_edge_table.push_back(
+        std::make_pair(std::make_pair(edge.e1_str, edge.e2_str),
+                       std::make_pair(expr_final, edge.kind)));
     }
 
     oc_guard_mapt oc_guard_map;
     oc_location_mapt oc_location_map;
-    for(auto& e_it: equation.oc_guard_map)
+    for(const auto &e_it : equation.oc_guard_map)
     {
-        std::string name = id2string(e_it->ssa_lhs.get_identifier());
-        int location = std::atoi(e_it->source.pc->source_location().get_line().c_str());
-        literalt guard = decision_procedure.convert(e_it->guard);
-        Minisat::Lit guard_final = Minisat::mkLit(guard.var_no(), guard.sign());
-        oc_guard_map.insert(std::make_pair(name, guard_final));
-        oc_location_map.insert(std::make_pair(name, location));
+      std::string name = id2string(e_it->ssa_lhs.get_identifier());
+      int location =
+        std::atoi(e_it->source.pc->source_location().get_line().c_str());
+      literalt guard = decision_procedure->convert(e_it->guard);
+      Minisat::Lit guard_final = Minisat::mkLit(guard.var_no(), guard.sign());
+      oc_guard_map.insert(std::make_pair(name, guard_final));
+      oc_location_map.insert(std::make_pair(name, location));
     }
 
-    deagle_solver.save_raw_graph(oc_edge_table, oc_guard_map, oc_location_map, equation.oc_result_order);
-    //deagle_solver.init();
+    // Usare -> perché deagle_solver è pointer
+    deagle_solver->save_raw_graph(
+      oc_edge_table, oc_guard_map, oc_location_map, equation.oc_result_order);
   }
   // __SZH_ADD_END__
 
