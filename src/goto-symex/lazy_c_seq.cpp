@@ -106,7 +106,7 @@ void lazy_c_seqt::create_read_constraints(
         const symbol_exprt exec =
           create_exec_symbol(read.label, read.thread, round);
 
-        boost::optional<symbol_exprt> previous =
+        std::optional<symbol_exprt> previous =
           previous_shared(global_variable, read.label, read.thread, round);
         if(previous.has_value())
         {
@@ -121,14 +121,14 @@ void lazy_c_seqt::create_read_constraints(
   }
 }
 
-boost::optional<symbol_exprt> lazy_c_seqt::previous_shared(
+std::optional<symbol_exprt> lazy_c_seqt::previous_shared(
   irep_idt variable,
   unsigned label,
   unsigned thread,
   std::size_t round)
 {
   if(lazy_variables.count(variable) == 0)
-    return boost::none;
+    return std::nullopt;
   symbol_exprt previous = lazy_variables.at(variable).front().symbol;
   for(const auto &lazy_variable : lazy_variables.at(variable))
   {
@@ -246,7 +246,7 @@ void lazy_c_seqt::create_cs_constraint(
 
           std::string active_name =
             "active_thread_T" + std::to_string(write.s_it->source.thread_nr);
-          boost::optional<symbol_exprt> active_thread =
+          std::optional<symbol_exprt> active_thread =
             previous_shared(active_name, write.label, write.thread, round);
           exprt active_thread_value = true_exprt{};
           if(active_thread.has_value())
@@ -306,7 +306,7 @@ void lazy_c_seqt::create_cs_constraint(
 
           std::string active_name =
             "active_thread_T" + std::to_string(read.s_it->source.thread_nr);
-          boost::optional<symbol_exprt> active_thread =
+          std::optional<symbol_exprt> active_thread =
             previous_shared(active_name, read.label, read.thread, round);
           exprt active_thread_value = true_exprt{};
           if(active_thread.has_value())
@@ -365,7 +365,7 @@ void lazy_c_seqt::create_cs_constraint(
       std::string active_name =
         "active_thread_T" +
         std::to_string(blocking_event.s_it->source.thread_nr);
-      boost::optional<symbol_exprt> active_thread = previous_shared(
+      std::optional<symbol_exprt> active_thread = previous_shared(
         active_name, blocking_event.label, blocking_event.thread, round);
       exprt active_thread_value = true_exprt{};
       if(active_thread.has_value())
@@ -593,7 +593,7 @@ void lazy_c_seqt::handling_active_threads(
 
   auto ssa_steps = equation.SSA_steps;
 
-  unsigned thread_current = 999;
+  unsigned thread_current = 0;
 
   for(symex_target_equationt::SSA_stepst::const_iterator s_it =
         ssa_steps.begin();
@@ -602,15 +602,16 @@ void lazy_c_seqt::handling_active_threads(
   {
     exprt guard = s_it->guard;
 
-    if(s_it->source.thread_nr != thread_current)
+    if(s_it->source.thread_nr > thread_current)
       thread_current = s_it->source.thread_nr;
   }
+
 
   exprt guard = true_exprt{};
 
   for(unsigned thread = 0; thread <= thread_current; thread++)
   {
-    create_active_thread_symbol(thread);
+    exprt symbol = create_active_thread_symbol(thread);
     if(thread == 0)
       create_active_thread_statements(
         ssa_steps.begin()->source,

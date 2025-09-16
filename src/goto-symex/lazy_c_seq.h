@@ -5,7 +5,8 @@
 #define CPROVER_GOTO_SYMEX_LAZY_C_SEQ_H
 
 #include "symex_target_equation.h"
-#include <boost/optional.hpp>
+
+#include <optional>
 
 class lazy_c_seqt
 {
@@ -103,7 +104,7 @@ private:
     symex_target_equationt &equation,
     message_handlert &message_handler);
 
-  boost::optional<symbol_exprt> previous_shared(
+  std::optional<symbol_exprt> previous_shared(
     irep_idt variable,
     unsigned label,
     unsigned thread,

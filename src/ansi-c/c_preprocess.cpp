@@ -537,7 +537,7 @@ bool c_preprocess_gcc_clang(
     case configt::cppt::cpp_standardt::CPP11:
 #if defined(__OpenBSD__)
       if(preprocessor == configt::ansi_ct::preprocessort::CLANG)
-        argv.push_back("-std=c++11");
+        argv.push_back("-std=c++17");
       else
 #endif
         argv.push_back("-std=gnu++11");
