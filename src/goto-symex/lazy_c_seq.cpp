@@ -167,12 +167,10 @@ void lazy_c_seqt::create_cs_constraint(
     exprt previous;
     unsigned max_num = 0;
     unsigned min_num = 0;
-    unsigned num_bits = 0;
 
     max_num = labels[thread]-1;
 
-    num_bits = 0 ? 0 : 32 - __builtin_clz(max_num + 1);
-    n_bit[thread] = num_bits;
+    n_bit[thread] = 0 ? 0 : 32 - __builtin_clz(max_num + 1);
 
     log.warning() << "thread " << thread << ": from " << min_num << " to "
                   << max_num << messaget::eom;
@@ -183,7 +181,7 @@ void lazy_c_seqt::create_cs_constraint(
 
       if(round == 1)
       {
-        exprt min{from_integer({min_num}, unsignedbv_typet{num_bits})};
+        exprt min{from_integer({min_num}, unsignedbv_typet{n_bit[thread]})};
         less_than_or_equal_exprt constraint{min, cs};
         log.warning() << format(constraint) << messaget::eom;
         equation.constraint(
@@ -203,7 +201,7 @@ void lazy_c_seqt::create_cs_constraint(
       }
       if(round == rounds)
       {
-        exprt max{from_integer({max_num + 1}, unsignedbv_typet{num_bits})};
+        exprt max{from_integer({max_num + 1}, unsignedbv_typet{n_bit[thread]})};
         less_than_or_equal_exprt last_constraint{cs, max};
         log.warning() << format(last_constraint) << messaget::eom;
         equation.constraint(
