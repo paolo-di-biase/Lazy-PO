@@ -83,6 +83,7 @@ private:
     atomic_sections; // < thread < start_label, end_label > >
   std::unordered_map<irep_idt, shared_event> atomic_writes;
   std::unordered_map<unsigned, unsigned> n_bit;
+  std::unordered_map<unsigned, unsigned> labels;
 
   void handling_active_threads(
     symex_target_equationt &equation,

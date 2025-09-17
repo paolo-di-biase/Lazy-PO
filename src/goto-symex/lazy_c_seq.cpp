@@ -760,7 +760,6 @@ void lazy_c_seqt::collect_reads_and_writes(
   log.warning() << "-------------------COLLECTING--------------------------"
                 << messaget::eom;
 
-  unsigned label = 1;
 
 
   for(symex_target_equationt::SSA_stepst::const_iterator s_it =
@@ -768,16 +767,16 @@ void lazy_c_seqt::collect_reads_and_writes(
       s_it != ssa_steps.end();
       s_it++)
   {
-    if(s_it->source.thread_nr > threads)
+    if(this->labels.count(s_it->source.thread_nr) == 0)
     {
       threads = s_it->source.thread_nr;
-      label = 1;
+      labels[s_it->source.thread_nr] = 1;
     }
 
     if(s_it->is_assert() || s_it->is_assume())
     {
-      shared_event shared_event{s_it, label, s_it->source.thread_nr};
-      label++;
+      shared_event shared_event{s_it, labels[s_it->source.thread_nr], s_it->source.thread_nr};
+      labels[s_it->source.thread_nr]++;
 
       log.warning() << "Thread: " << shared_event.s_it->source.thread_nr
                     << "\tBlocking statement: " << shared_event.label << "\t"
@@ -790,16 +789,16 @@ void lazy_c_seqt::collect_reads_and_writes(
     if(s_it->is_atomic_begin())
     {
       atomic_sections.emplace_back(
-        s_it->source.thread_nr, std::pair<unsigned,unsigned>(label, NULL));
-      log.warning() << "ATOMIC BEGIN: " << label << messaget::eom;
-      label++;
+        s_it->source.thread_nr, std::pair<unsigned,unsigned>(labels[s_it->source.thread_nr], NULL));
+      log.warning() << "ATOMIC BEGIN: " << labels[s_it->source.thread_nr] << messaget::eom;
+      labels[s_it->source.thread_nr]++;
     }
 
     if(s_it->is_atomic_end())
     {
-      atomic_sections.back().second.second = label;
-      log.warning() << "ATOMIC END: " << label << messaget::eom;
-      label++;
+      atomic_sections.back().second.second =  labels[s_it->source.thread_nr];
+      log.warning() << "ATOMIC END: " <<  labels[s_it->source.thread_nr] << messaget::eom;
+       labels[s_it->source.thread_nr]++;
       for(auto atomic_write : atomic_writes)
       {
         this->writes[atomic_write.first].emplace_back(atomic_write.second);
@@ -811,8 +810,8 @@ void lazy_c_seqt::collect_reads_and_writes(
       // TODO: this may be too restrictive
       if(can_cast_expr<symbol_exprt>(s_it->ssa_lhs))
       {
-        shared_event shared_event{s_it, label, s_it->source.thread_nr};
-        label++;
+        shared_event shared_event{s_it,  labels[s_it->source.thread_nr], s_it->source.thread_nr};
+         labels[s_it->source.thread_nr]++;
 
         log.warning()
           << "Thread: " << shared_event.s_it->source.thread_nr
@@ -848,8 +847,8 @@ void lazy_c_seqt::collect_reads_and_writes(
       // TODO: this may be too restrictive
       if(can_cast_expr<symbol_exprt>(s_it->ssa_lhs))
       {
-        shared_event shared_event{s_it, label, s_it->source.thread_nr};
-        label++;
+        shared_event shared_event{s_it,  labels[s_it->source.thread_nr], s_it->source.thread_nr};
+         labels[s_it->source.thread_nr]++;
 
         log.warning()
           << "Thread: " << shared_event.s_it->source.thread_nr
