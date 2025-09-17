@@ -628,6 +628,7 @@ void lazy_c_seqt::handling_active_threads(
 
   unsigned thread_created = 1;
   thread_current = 999;
+  bool thread_creating = false;
 
   for(symex_target_equationt::SSA_stepst::const_iterator s_it =
         ssa_steps.begin();
@@ -639,8 +640,9 @@ void lazy_c_seqt::handling_active_threads(
     if(s_it->source.thread_nr != thread_current)
       thread_current = s_it->source.thread_nr;
 
-    if(s_it->is_function_call() && s_it->called_function == "pthread_create")
+    if (s_it->source.pc->source_location().get_function() == "pthread_create" && thread_creating)
     {
+      thread_creating = false;
       create_active_thread_statements(
         s_it->source,
         guard,
@@ -656,6 +658,11 @@ void lazy_c_seqt::handling_active_threads(
 
       equation.SSA_steps.pop_front();
       temp_equation.SSA_steps.emplace_back(step);
+    }
+
+    if(s_it->is_function_call() && s_it->called_function == "pthread_create")
+    {
+      thread_creating = true;
     }
     else
     {
