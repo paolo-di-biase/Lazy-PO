@@ -412,14 +412,14 @@ bool goto_symex_statet::l2_thread_read_encoding(
   const exprt guard_as_expr = guard.as_expr();
 
   // see whether we are within an atomic section
-  if(atomic_section_id!=0)
+if(atomic_section_id!=0)
   {
     guardt write_guard{false_exprt{}, guard_manager};
 
     const auto a_s_writes = written_in_atomic_section.find(ssa_l1);
     if(a_s_writes!=written_in_atomic_section.end())
     {
-      for(const auto &guard_in_list : a_s_writes->second)
+      for(const auto &guard_in_list : a_s_writes->second.first)
       {
         guardt g = guard_in_list;
         g-=guard;
@@ -440,7 +440,7 @@ bool goto_symex_statet::l2_thread_read_encoding(
     // all branches flowing into this read
     guardt read_guard{false_exprt{}, guard_manager};
 
-    a_s_r_entryt &a_s_read=read_in_atomic_section[ssa_l1];
+    a_s_r_entryt &a_s_read = read_in_atomic_section[ssa_l1].first;
     for(const auto &a_s_read_guard : a_s_read.second)
     {
       guardt g = a_s_read_guard; // copy
@@ -481,6 +481,13 @@ bool goto_symex_statet::l2_thread_read_encoding(
     else
       tmp = if_exprt{cond.as_expr(), l2_true_case, l2_false_case.get()};
 
+    INVARIANT_STRUCTURED(
+      symex_target != nullptr, nullptr_exceptiont, "symex_target is null");
+    ssa_exprt r = ssa_l1;
+    r.set_level_2(a_s_read.first);
+    symex_target->shared_read(
+      guard_as_expr, r, atomic_section_id, source);
+
     record_events.push(false);
     ssa_exprt ssa_l2 = assignment(std::move(ssa_l1), tmp, ns, true, true).get();
     record_events.pop();
@@ -498,7 +505,6 @@ bool goto_symex_statet::l2_thread_read_encoding(
     expr = std::move(ssa_l2);
 
     a_s_read.second.push_back(guard);
-    read_in_atomic_section_sources.emplace_back(ssa_l1, source);
     if(!no_write.op().is_false())
       a_s_read.second.back().add(no_write);
 
@@ -565,7 +571,12 @@ bool goto_symex_statet::l2_thread_write_encoding(
     return false;
   case write_is_shared_resultt::IN_ATOMIC_SECTION:
   {
-    written_in_atomic_section[remove_level_2(expr)].push_back(guard);
+      written_in_atomic_section[remove_level_2(expr)].first.push_back(guard);
+      symex_target->shared_write(
+        guard.as_expr(),
+        expr,
+        atomic_section_id,
+        source);
     written_in_atomic_section_sources.emplace_back(remove_level_2(expr), source);
     return false;
   }
