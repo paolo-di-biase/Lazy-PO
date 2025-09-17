@@ -169,13 +169,7 @@ void lazy_c_seqt::create_cs_constraint(
     unsigned min_num = 0;
     unsigned num_bits = 0;
 
-    for(auto &event : shared_events)
-    {
-      if(event.s_it->source.thread_nr == thread && event.label > max_num)
-      {
-        max_num = event.label;
-      }
-    }
+    max_num = labels[thread]-1;
 
     num_bits = 0 ? 0 : 32 - __builtin_clz(max_num + 1);
     n_bit[thread] = num_bits;
