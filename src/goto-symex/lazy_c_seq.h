@@ -89,6 +89,10 @@ private:
     symex_target_equationt &equation,
     message_handlert &message_handler);
 
+  void check_shared_event(
+    symex_target_equationt &equation,
+    message_handlert &message_handler);
+
   void handling_atomic_sections(
     symex_target_equationt &equation,
     message_handlert &message_handler);

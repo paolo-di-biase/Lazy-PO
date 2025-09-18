@@ -22,6 +22,8 @@ void lazy_c_seqt::operator()(
   log.statistics() << "Adding LazyCSeq constraints with " << rounds << " rounds"
                    << messaget::eom;
 
+  check_shared_event(equation, message_handler);
+
   handling_active_threads(equation, message_handler);
 
   collect_reads_and_writes(equation.SSA_steps, message_handler);
@@ -152,6 +154,62 @@ std::optional<symbol_exprt> lazy_c_seqt::previous_shared(
     return previous;
   }
   return previous;
+}
+
+void lazy_c_seqt::check_shared_event(
+    symex_target_equationt &equation,
+    message_handlert &message_handler)
+{
+  messaget log{message_handler};
+
+  log.warning() << "-------------------CHECKING EVENTS--------------------------"
+                << messaget::eom;
+
+  symex_target_equationt temp_equation{equation};
+  temp_equation.clear();
+
+  auto ssa_steps = equation.SSA_steps;
+
+  for(symex_target_equationt::SSA_stepst::const_iterator s_it =
+        ssa_steps.begin();
+      s_it != ssa_steps.end();
+      s_it++)
+  {
+    bool assigned = true;
+    if (s_it->is_shared_write())
+    {
+      assigned = false;
+
+      auto step = s_it;
+      step++;
+
+      for(symex_target_equationt::SSA_stepst::const_iterator iter =
+        step;
+      iter != ssa_steps.end();
+      iter++)
+      {
+        if (iter->ssa_lhs == s_it->ssa_lhs)
+        {
+          assigned = true;
+          break;
+        }
+      }
+    }
+    if (!assigned)
+    {
+      equation.SSA_steps.pop_front();
+      log.warning() << "Invalid event: SHARED_WRITE(" << format(s_it->get_ssa_expr()) << ")" << messaget::eom;
+    }
+    else
+    {
+      SSA_stept step{equation.SSA_steps.front()};
+      step.type = equation.SSA_steps.front().type;
+
+      equation.SSA_steps.pop_front();
+      temp_equation.SSA_steps.emplace_back(step);
+    }
+  }
+  equation = temp_equation;
 }
 
 void lazy_c_seqt::create_cs_constraint(
