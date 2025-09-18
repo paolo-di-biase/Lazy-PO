@@ -577,7 +577,6 @@ bool goto_symex_statet::l2_thread_write_encoding(
         expr,
         atomic_section_id,
         source);
-    written_in_atomic_section_sources.emplace_back(remove_level_2(expr), source);
     return false;
   }
   case write_is_shared_resultt::SHARED:

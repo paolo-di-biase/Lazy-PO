@@ -26,8 +26,6 @@ void goto_symext::symex_atomic_begin(statet &state)
   state.atomic_section_id=++atomic_section_counter;
   state.read_in_atomic_section.clear();
   state.written_in_atomic_section.clear();
-  state.read_in_atomic_section_sources.clear();
-  state.written_in_atomic_section_sources.clear();
 
   target.atomic_begin(
       state.guard.as_expr(),
