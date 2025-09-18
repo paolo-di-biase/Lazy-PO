@@ -599,12 +599,14 @@ void lazy_c_seqt::handling_active_threads(
     if(s_it->source.thread_nr > thread_current)
       thread_current = s_it->source.thread_nr;
   }
+  std::unordered_map<unsigned, bool> thread_ends;
 
 
   exprt guard = true_exprt{};
 
   for(unsigned thread = 0; thread <= thread_current; thread++)
   {
+    thread_ends[thread] = false;
     exprt symbol = create_active_thread_symbol(thread);
     if(thread == 0)
       create_active_thread_statements(
@@ -627,8 +629,10 @@ void lazy_c_seqt::handling_active_threads(
   }
 
   unsigned thread_created = 1;
-  thread_current = 999;
+  thread_current = 0;
   bool thread_creating = false;
+
+  symex_target_equationt::SSA_stepst::const_iterator prev;
 
   for(symex_target_equationt::SSA_stepst::const_iterator s_it =
         ssa_steps.begin();
@@ -637,8 +641,31 @@ void lazy_c_seqt::handling_active_threads(
   {
     guard = s_it->guard;
 
-    if(s_it->source.thread_nr != thread_current)
+    if(s_it->source.thread_nr > thread_current)
+    {
+      thread_ends[thread_current] = true;
+      exprt prev_guard = prev->guard;
+
+      create_active_thread_statements(
+        prev->source,
+        prev_guard,
+        prev->atomic_section_id,
+        thread_current,
+        temp_equation,
+        message_handler,
+        false_exprt{});
+
       thread_current = s_it->source.thread_nr;
+
+      SSA_stept step{equation.SSA_steps.front()};
+      step.type = equation.SSA_steps.front().type;
+
+      equation.SSA_steps.pop_front();
+      temp_equation.SSA_steps.emplace_back(step);
+
+      prev = s_it;
+      continue;
+    }
 
     if (s_it->source.pc->source_location().get_function() == "pthread_create" && thread_creating)
     {
@@ -667,7 +694,7 @@ void lazy_c_seqt::handling_active_threads(
     }
     else
     {
-      if(
+      /*if(
         s_it->source.thread_nr != 0 && s_it->is_shared_write() &&
         s_it->ssa_lhs.get_object_name() == "__CPROVER_threads_exited")
       {
@@ -706,16 +733,35 @@ void lazy_c_seqt::handling_active_threads(
             temp_equation,
             message_handler,
             false_exprt{});
-        }
-        else
-        {
+        }*/
+        //else
+        //{
           SSA_stept step{equation.SSA_steps.front()};
           step.type = equation.SSA_steps.front().type;
 
           equation.SSA_steps.pop_front();
           temp_equation.SSA_steps.emplace_back(step);
-        }
-      }
+        //}
+      //}
+    }
+    prev = s_it;
+  }
+  for (auto thread_end : thread_ends)
+  {
+    if (thread_end.second == false)
+    {
+      thread_ends[thread_current] = true;
+      exprt prev_guard = true_exprt{};
+      unsigned thread = thread_end.first;
+
+      create_active_thread_statements(
+        prev->source,
+        prev_guard,
+        prev->atomic_section_id,
+        thread,
+        temp_equation,
+        message_handler,
+        false_exprt{});
     }
   }
   equation = temp_equation;
