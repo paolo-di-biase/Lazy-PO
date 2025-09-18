@@ -495,10 +495,10 @@ void lazy_c_seqt::handling_guards(
 
       for(std::size_t round = 1; round <= rounds; round++)
       {
-        symbol_exprt exec = create_exec_symbol(
+        symbol_exprt enabled = create_enabled_symbol(
           blocking_event.label, blocking_event.thread, round);
 
-        constraint = or_exprt{constraint, exec};
+        constraint = or_exprt{constraint, enabled};
       }
 
       simplify(constraint, ns);
@@ -517,6 +517,7 @@ void lazy_c_seqt::handling_guards(
       exprt new_expr = implies_exprt{new_guard, new_cond};
       simplify(new_expr, ns);
       step.cond_expr = new_expr;
+      step.type = s_it->type;
       log.warning() << format(step.get_ssa_expr()) << messaget::eom;
       log.warning() << "guard: " << format(step.guard) << messaget::eom;
       temp_equation.SSA_steps.emplace_back(step);
@@ -524,6 +525,7 @@ void lazy_c_seqt::handling_guards(
     else
     {
       SSA_stept step{equation.SSA_steps.front()};
+      step.type = equation.SSA_steps.front().type;
 
       equation.SSA_steps.pop_front();
       temp_equation.SSA_steps.emplace_back(step);
@@ -653,6 +655,7 @@ void lazy_c_seqt::handling_active_threads(
       thread_created++;
 
       SSA_stept step{equation.SSA_steps.front()};
+      step.type = equation.SSA_steps.front().type;
 
       equation.SSA_steps.pop_front();
       temp_equation.SSA_steps.emplace_back(step);
@@ -669,6 +672,7 @@ void lazy_c_seqt::handling_active_threads(
         s_it->ssa_lhs.get_object_name() == "__CPROVER_threads_exited")
       {
         SSA_stept step{equation.SSA_steps.front()};
+        step.type = equation.SSA_steps.front().type;
 
         equation.SSA_steps.pop_front();
         temp_equation.SSA_steps.emplace_back(step);
@@ -689,6 +693,7 @@ void lazy_c_seqt::handling_active_threads(
           s_it->ssa_lhs.get_object_name() == "return'")
         {
           SSA_stept step{equation.SSA_steps.front()};
+          step.type = equation.SSA_steps.front().type;
 
           equation.SSA_steps.pop_front();
           temp_equation.SSA_steps.emplace_back(step);
@@ -705,6 +710,7 @@ void lazy_c_seqt::handling_active_threads(
         else
         {
           SSA_stept step{equation.SSA_steps.front()};
+          step.type = equation.SSA_steps.front().type;
 
           equation.SSA_steps.pop_front();
           temp_equation.SSA_steps.emplace_back(step);
