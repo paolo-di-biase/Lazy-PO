@@ -85,28 +85,28 @@ private:
   std::unordered_map<unsigned, unsigned> labels;
 
   void handling_active_threads(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   void check_shared_event(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   void handling_atomic_sections(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   void collect_reads_and_writes(
-    const symex_target_equationt::SSA_stepst &ssa_steps,
-    message_handlert &message_handler);
+    const symex_target_equationt::SSA_stepst &ssa_steps/*,
+    message_handlert &message_handler*/);
 
   void create_write_constraints(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   void create_read_constraints(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   std::optional<symbol_exprt> previous_shared(
     irep_idt variable,
@@ -115,16 +115,16 @@ private:
     std::size_t round);
 
   void create_cs_constraint(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   void create_reach_constraint(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   void handling_guards(
-    symex_target_equationt &equation,
-    message_handlert &message_handler);
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/);
 
   symbol_exprt create_lazy_symbol(
     unsigned label,
@@ -150,8 +150,8 @@ private:
     exprt &guard,
     unsigned int atomic_section_id,
     unsigned &thread,
-    symex_target_equationt &equation,
-    message_handlert &message_handler,
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/,
     const exprt &value);
 };
 

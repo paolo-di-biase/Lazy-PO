@@ -22,32 +22,32 @@ void lazy_c_seqt::operator()(
   log.statistics() << "Adding LazyCSeq constraints with " << rounds << " rounds"
                    << messaget::eom;
 
-  check_shared_event(equation, message_handler);
+  check_shared_event(equation/*, message_handler*/);
 
-  handling_active_threads(equation, message_handler);
+  handling_active_threads(equation/*, message_handler*/);
 
-  collect_reads_and_writes(equation.SSA_steps, message_handler);
+  collect_reads_and_writes(equation.SSA_steps/*, message_handler*/);
 
-  create_write_constraints(equation, message_handler);
+  create_write_constraints(equation/*, message_handler*/);
 
-  create_read_constraints(equation, message_handler);
+  create_read_constraints(equation/*, message_handler*/);
 
-  create_cs_constraint(equation, message_handler);
+  create_cs_constraint(equation/*, message_handler*/);
 
-  handling_atomic_sections(equation, message_handler);
+  handling_atomic_sections(equation/*, message_handler*/);
 
-  handling_guards(equation, message_handler);
+  handling_guards(equation/*, message_handler*/);
 
 }
 
 void lazy_c_seqt::create_write_constraints(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
+  //messaget log{message_handler};
 
-  log.warning() << "-------------------WRITES--------------------------"
-                << messaget::eom;
+  //log.warning() << "-------------------WRITES--------------------------"
+  //              << messaget::eom;
 
   for(auto global_variable : global_variables)
   {
@@ -79,7 +79,7 @@ void lazy_c_seqt::create_write_constraints(
         equal_exprt constraint{
           lazy_variable_exprt, if_exprt{exec, write.s_it->ssa_lhs, previous}};
 
-        log.warning() << format(constraint) << messaget::eom;
+        //log.warning() << format(constraint) << messaget::eom;
         equation.constraint(constraint, "write constraint", write.s_it->source);
 
         previous = lazy_variable_exprt;
@@ -89,12 +89,12 @@ void lazy_c_seqt::create_write_constraints(
 }
 
 void lazy_c_seqt::create_read_constraints(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
-  log.warning() << "-------------------READS--------------------------"
-                << messaget::eom;
+  //messaget log{message_handler};
+  //log.warning() << "-------------------READS--------------------------"
+  //              << messaget::eom;
 
   for(auto global_variable : global_variables)
   {
@@ -116,7 +116,7 @@ void lazy_c_seqt::create_read_constraints(
         }
       }
       equal_exprt final_constraint{read.s_it->ssa_lhs, temp_constraint};
-      log.warning() << format(final_constraint) << messaget::eom;
+      //log.warning() << format(final_constraint) << messaget::eom;
       equation.constraint(
         final_constraint, "read constraint", read.s_it->source);
     }
@@ -157,13 +157,13 @@ std::optional<symbol_exprt> lazy_c_seqt::previous_shared(
 }
 
 void lazy_c_seqt::check_shared_event(
-    symex_target_equationt &equation,
-    message_handlert &message_handler)
+    symex_target_equationt &equation/*,
+    message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
+  //messaget log{message_handler};
 
-  log.warning() << "-------------------CHECKING EVENTS--------------------------"
-                << messaget::eom;
+  //log.warning() << "-------------------CHECKING EVENTS--------------------------"
+  //              << messaget::eom;
 
   symex_target_equationt temp_equation{equation};
   temp_equation.clear();
@@ -198,7 +198,7 @@ void lazy_c_seqt::check_shared_event(
     if (!assigned)
     {
       equation.SSA_steps.pop_front();
-      log.warning() << "Invalid event: SHARED_WRITE(" << format(s_it->get_ssa_expr()) << ")" << messaget::eom;
+      //log.warning() << "Invalid event: SHARED_WRITE(" << format(s_it->get_ssa_expr()) << ")" << messaget::eom;
     }
     else
     {
@@ -213,12 +213,12 @@ void lazy_c_seqt::check_shared_event(
 }
 
 void lazy_c_seqt::create_cs_constraint(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
-  log.warning() << "-------------------CS--------------------------"
-                << messaget::eom;
+  //messaget log{message_handler};
+  //log.warning() << "-------------------CS--------------------------"
+  //              << messaget::eom;
 
   for(unsigned thread = 0; thread <= threads; ++thread)
   {
@@ -230,8 +230,8 @@ void lazy_c_seqt::create_cs_constraint(
 
     n_bit[thread] = 0 ? 0 : 32 - __builtin_clz(max_num + 1);
 
-    log.warning() << "thread " << thread << ": from " << min_num << " to "
-                  << max_num << messaget::eom;
+    //log.warning() << "thread " << thread << ": from " << min_num << " to "
+    //              << max_num << messaget::eom;
 
     for(size_t round = 1; round <= rounds; ++round)
     {
@@ -241,7 +241,7 @@ void lazy_c_seqt::create_cs_constraint(
       {
         exprt min{from_integer({min_num}, unsignedbv_typet{n_bit[thread]})};
         less_than_or_equal_exprt constraint{min, cs};
-        log.warning() << format(constraint) << messaget::eom;
+        //log.warning() << format(constraint) << messaget::eom;
         equation.constraint(
           constraint,
           "cs constraint",
@@ -250,7 +250,7 @@ void lazy_c_seqt::create_cs_constraint(
       }
       else {
         less_than_or_equal_exprt constraint{previous, cs};
-        log.warning() << format(constraint) << messaget::eom;
+        //log.warning() << format(constraint) << messaget::eom;
         equation.constraint(
           constraint,
           "cs constraint",
@@ -261,7 +261,7 @@ void lazy_c_seqt::create_cs_constraint(
       {
         exprt max{from_integer({max_num + 1}, unsignedbv_typet{n_bit[thread]})};
         less_than_or_equal_exprt last_constraint{cs, max};
-        log.warning() << format(last_constraint) << messaget::eom;
+        //log.warning() << format(last_constraint) << messaget::eom;
         equation.constraint(
           last_constraint,
           "cs constraint",
@@ -315,19 +315,19 @@ void lazy_c_seqt::create_cs_constraint(
           and_exprt expr_3{expr_1, expr_2};
           equal_exprt enabled_expr{enabled, expr_3};
           simplify(enabled_expr, ns);
-          log.warning() << format(enabled_expr) << messaget::eom;
+          //log.warning() << format(enabled_expr) << messaget::eom;
           equation.constraint(
             enabled_expr, "cs constraint", write.s_it->source);
 
           implies_exprt active_expr{enabled, active_thread_value};
           simplify(active_expr, ns);
-          log.warning() << format(active_expr) << messaget::eom;
+          //log.warning() << format(active_expr) << messaget::eom;
           equation.constraint(active_expr, "cs constraint", write.s_it->source);
 
           and_exprt expr_5{enabled, write.s_it->guard};
           equal_exprt constraint{exec, expr_5};
           simplify(constraint, ns);
-          log.warning() << format(constraint) << messaget::eom;
+          //log.warning() << format(constraint) << messaget::eom;
           equation.constraint(constraint, "cs constraint", write.s_it->source);
         }
       }
@@ -375,18 +375,18 @@ void lazy_c_seqt::create_cs_constraint(
           and_exprt expr_3{expr_1, expr_2};
           equal_exprt enabled_expr{enabled, expr_3};
           simplify(enabled_expr, ns);
-          log.warning() << format(enabled_expr) << messaget::eom;
+          //log.warning() << format(enabled_expr) << messaget::eom;
           equation.constraint(enabled_expr, "cs constraint", read.s_it->source);
 
           implies_exprt active_expr{enabled, active_thread_value};
           simplify(active_expr, ns);
-          log.warning() << format(active_expr) << messaget::eom;
+          //log.warning() << format(active_expr) << messaget::eom;
           equation.constraint(active_expr, "cs constraint", read.s_it->source);
 
           and_exprt expr_5{enabled, read.s_it->guard};
           equal_exprt constraint{exec, expr_5};
           simplify(constraint, ns);
-          log.warning() << format(constraint) << messaget::eom;
+          //log.warning() << format(constraint) << messaget::eom;
           equation.constraint(constraint, "cs constraint", read.s_it->source);
         }
       }
@@ -434,20 +434,20 @@ void lazy_c_seqt::create_cs_constraint(
       and_exprt expr_3{expr_1, expr_2};
       equal_exprt enabled_expr{enabled, expr_3};
       simplify(enabled_expr, ns);
-      log.warning() << format(enabled_expr) << messaget::eom;
+      //log.warning() << format(enabled_expr) << messaget::eom;
       equation.constraint(
         enabled_expr, "cs constraint", blocking_event.s_it->source);
 
       implies_exprt active_expr{enabled, active_thread_value};
       simplify(active_expr, ns);
-      log.warning() << format(active_expr) << messaget::eom;
+      //log.warning() << format(active_expr) << messaget::eom;
       equation.constraint(
         active_expr, "cs constraint", blocking_event.s_it->source);
 
       and_exprt expr_5{enabled, blocking_event.s_it->guard};
       equal_exprt constraint{exec, expr_5};
       simplify(constraint, ns);
-      log.warning() << format(constraint) << messaget::eom;
+      //log.warning() << format(constraint) << messaget::eom;
       equation.constraint(
         constraint, "cs constraint", blocking_event.s_it->source);
     }
@@ -455,13 +455,13 @@ void lazy_c_seqt::create_cs_constraint(
 }
 
 void lazy_c_seqt::create_reach_constraint(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
+  //messaget log{message_handler};
 
-  log.warning() << "-------------------REACH--------------------------"
-                << messaget::eom;
+  //log.warning() << "-------------------REACH--------------------------"
+  //              << messaget::eom;
 
   for(auto global_variable : global_variables)
   {
@@ -486,7 +486,7 @@ void lazy_c_seqt::create_reach_constraint(
 
         equal_exprt final_constraint{reach, constraint};
         simplify(final_constraint, ns);
-        log.warning() << format(final_constraint) << messaget::eom;
+        //log.warning() << format(final_constraint) << messaget::eom;
         equation.constraint(
           final_constraint, "reach constraint", read.s_it->source);
       }
@@ -511,7 +511,7 @@ void lazy_c_seqt::create_reach_constraint(
 
         equal_exprt final_constraint{reach, constraint};
         simplify(final_constraint, ns);
-        log.warning() << format(final_constraint) << messaget::eom;
+        //log.warning() << format(final_constraint) << messaget::eom;
         equation.constraint(
           final_constraint, "reach constraint", write.s_it->source);
       }
@@ -520,13 +520,13 @@ void lazy_c_seqt::create_reach_constraint(
 }
 
 void lazy_c_seqt::handling_guards(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
+  //messaget log{message_handler};
 
-  log.warning() << "-------------------GUARDS--------------------------"
-                << messaget::eom;
+  //log.warning() << "-------------------GUARDS--------------------------"
+  //              << messaget::eom;
 
   symex_target_equationt temp_equation{equation};
   temp_equation.clear();
@@ -563,7 +563,7 @@ void lazy_c_seqt::handling_guards(
 
       equal_exprt final_constraint{reach, constraint};
       simplify(final_constraint, ns);
-      log.warning() << format(final_constraint) << messaget::eom;
+      //log.warning() << format(final_constraint) << messaget::eom;
       temp_equation.constraint(
         final_constraint,
         "blocking statement constraint",
@@ -576,8 +576,8 @@ void lazy_c_seqt::handling_guards(
       simplify(new_expr, ns);
       step.cond_expr = new_expr;
       step.type = s_it->type;
-      log.warning() << format(step.get_ssa_expr()) << messaget::eom;
-      log.warning() << "guard: " << format(step.guard) << messaget::eom;
+      //log.warning() << format(step.get_ssa_expr()) << messaget::eom;
+      //log.warning() << "guard: " << format(step.guard) << messaget::eom;
       temp_equation.SSA_steps.emplace_back(step);
     }
     else
@@ -593,20 +593,20 @@ void lazy_c_seqt::handling_guards(
 }
 
 void lazy_c_seqt::handling_atomic_sections(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
+  //messaget log{message_handler};
 
-  log.warning()
-    << "-------------------ATOMIC SECTIONS--------------------------"
-    << messaget::eom;
+  //log.warning()
+  //  << "-------------------ATOMIC SECTIONS--------------------------"
+  //  << messaget::eom;
 
   for(auto atomic_section : atomic_sections)
   {
-    log.warning() << "atomic section Thread " << atomic_section.first << ": L"
-                  << atomic_section.second.first << " : L"
-                  << atomic_section.second.second << messaget::eom;
+    // log.warning() << "atomic section Thread " << atomic_section.first << ": L"
+    //               << atomic_section.second.first << " : L"
+    //               << atomic_section.second.second << messaget::eom;
     exprt constraint;
 
     for(std::size_t round = 1; round <= rounds; round++)
@@ -624,7 +624,7 @@ void lazy_c_seqt::handling_atomic_sections(
             atomic_section.second.second,
             unsignedbv_typet{n_bit[atomic_section.first]})}};
 
-      log.warning() << format(constraint) << messaget::eom;
+      //log.warning() << format(constraint) << messaget::eom;
       equation.constraint(
         constraint, "atomic constraint", equation.SSA_steps.begin()->source);
     }
@@ -632,13 +632,13 @@ void lazy_c_seqt::handling_atomic_sections(
 }
 
 void lazy_c_seqt::handling_active_threads(
-  symex_target_equationt &equation,
-  message_handlert &message_handler)
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
-
-  log.warning() << "-------------------ACTIVE THREAD--------------------------"
-                << messaget::eom;
+  // messaget log{message_handler};
+  //
+  // log.warning() << "-------------------ACTIVE THREAD--------------------------"
+  //               << messaget::eom;
 
   symex_target_equationt temp_equation{equation};
   temp_equation.clear();
@@ -673,7 +673,7 @@ void lazy_c_seqt::handling_active_threads(
         ssa_steps.begin()->atomic_section_id,
         thread,
         temp_equation,
-        message_handler,
+        //message_handler,
         true_exprt{});
     else
       create_active_thread_statements(
@@ -682,7 +682,7 @@ void lazy_c_seqt::handling_active_threads(
         ssa_steps.begin()->atomic_section_id,
         thread,
         temp_equation,
-        message_handler,
+        //message_handler,
         false_exprt{});
   }
 
@@ -710,7 +710,7 @@ void lazy_c_seqt::handling_active_threads(
         prev->atomic_section_id,
         thread_current,
         temp_equation,
-        message_handler,
+        //message_handler,
         false_exprt{});
 
       thread_current = s_it->source.thread_nr;
@@ -734,7 +734,7 @@ void lazy_c_seqt::handling_active_threads(
         s_it->atomic_section_id,
         thread_created,
         temp_equation,
-        message_handler,
+        //message_handler,
         true_exprt{});
 
       thread_created++;
@@ -818,7 +818,7 @@ void lazy_c_seqt::handling_active_threads(
         prev->atomic_section_id,
         thread,
         temp_equation,
-        message_handler,
+        //message_handler,
         false_exprt{});
     }
   }
@@ -830,11 +830,11 @@ void lazy_c_seqt::create_active_thread_statements(
   exprt &guard,
   unsigned int atomic_section_id,
   unsigned &thread,
-  symex_target_equationt &equation,
-  message_handlert &message_handler,
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/,
   const exprt &value)
 {
-  messaget log{message_handler};
+  //messaget log{message_handler};
 
   SSA_stept event_step{source, goto_trace_stept::typet::SHARED_WRITE};
   event_step.guard = guard;
@@ -843,7 +843,7 @@ void lazy_c_seqt::create_active_thread_statements(
   event_step.ssa_lhs = event_expr;
   event_step.atomic_section_id = atomic_section_id;
   equation.SSA_steps.emplace_back(event_step);
-  log.warning() << format(event_step.get_ssa_expr()) << messaget::eom;
+  //log.warning() << format(event_step.get_ssa_expr()) << messaget::eom;
 
   SSA_stept active_step{source, goto_trace_stept::typet::ASSIGNMENT};
   active_step.guard = guard;
@@ -857,17 +857,17 @@ void lazy_c_seqt::create_active_thread_statements(
     symex_targett::assignment_typet::VISIBLE_ACTUAL_PARAMETER; //TODO: check
   active_step.atomic_section_id = atomic_section_id;
   equation.SSA_steps.emplace_back(active_step);
-  log.warning() << format(active_step.get_ssa_expr()) << messaget::eom;
+  //log.warning() << format(active_step.get_ssa_expr()) << messaget::eom;
 }
 
 void lazy_c_seqt::collect_reads_and_writes(
-  const symex_target_equationt::SSA_stepst &ssa_steps,
-  message_handlert &message_handler)
+  const symex_target_equationt::SSA_stepst &ssa_steps/*,
+  message_handlert &message_handler*/)
 {
-  messaget log{message_handler};
-
-  log.warning() << "-------------------COLLECTING--------------------------"
-                << messaget::eom;
+  // messaget log{message_handler};
+  //
+  // log.warning() << "-------------------COLLECTING--------------------------"
+  //               << messaget::eom;
 
 
 
@@ -887,9 +887,9 @@ void lazy_c_seqt::collect_reads_and_writes(
       shared_event shared_event{s_it, labels[s_it->source.thread_nr], s_it->source.thread_nr};
       labels[s_it->source.thread_nr]++;
 
-      log.warning() << "Thread: " << shared_event.s_it->source.thread_nr
-                    << "\tBlocking statement: " << shared_event.label << "\t"
-                    << format(s_it->cond_expr) << messaget::eom;
+      // log.warning() << "Thread: " << shared_event.s_it->source.thread_nr
+      //               << "\tBlocking statement: " << shared_event.label << "\t"
+      //               << format(s_it->cond_expr) << messaget::eom;
 
       this->blocking_events.emplace_back(shared_event);
       shared_events.emplace_back(shared_event);
@@ -899,14 +899,14 @@ void lazy_c_seqt::collect_reads_and_writes(
     {
       atomic_sections.emplace_back(
         s_it->source.thread_nr, std::pair<unsigned,unsigned>(labels[s_it->source.thread_nr], NULL));
-      log.warning() << "ATOMIC BEGIN: " << labels[s_it->source.thread_nr] << messaget::eom;
+      //log.warning() << "ATOMIC BEGIN: " << labels[s_it->source.thread_nr] << messaget::eom;
       labels[s_it->source.thread_nr]++;
     }
 
     if(s_it->is_atomic_end())
     {
       atomic_sections.back().second.second =  labels[s_it->source.thread_nr];
-      log.warning() << "ATOMIC END: " <<  labels[s_it->source.thread_nr] << messaget::eom;
+      //log.warning() << "ATOMIC END: " <<  labels[s_it->source.thread_nr] << messaget::eom;
       labels[s_it->source.thread_nr]++;
     }
 
@@ -917,11 +917,11 @@ void lazy_c_seqt::collect_reads_and_writes(
         shared_event shared_event{s_it,  labels[s_it->source.thread_nr], s_it->source.thread_nr};
          labels[s_it->source.thread_nr]++;
 
-        log.warning()
-          << "Thread: " << shared_event.s_it->source.thread_nr
-          << "\tWrite: " << shared_event.label << "   \t"
-          << to_symbol_expr(shared_event.s_it->ssa_lhs).get_identifier()
-          << "\tL" << shared_event.label << messaget::eom;
+        // log.warning()
+        //   << "Thread: " << shared_event.s_it->source.thread_nr
+        //   << "\tWrite: " << shared_event.label << "   \t"
+        //   << to_symbol_expr(shared_event.s_it->ssa_lhs).get_identifier()
+        //   << "\tL" << shared_event.label << messaget::eom;
         shared_events.emplace_back(shared_event);
         this->writes[shared_event.s_it->ssa_lhs.get_l1_object_identifier()]
           .emplace_back(shared_event);
@@ -930,10 +930,10 @@ void lazy_c_seqt::collect_reads_and_writes(
       }
       else
       {
-        log.warning() << "Skipping: "
-                      << "Thread: " << s_it->source.thread_nr
-                      << "\tWrite: " << s_it->source.pc->location_number
-                      << messaget::eom;
+        // log.warning() << "Skipping: "
+        //               << "Thread: " << s_it->source.thread_nr
+        //               << "\tWrite: " << s_it->source.pc->location_number
+        //               << messaget::eom;
       }
     }
     if(s_it->is_shared_read())
@@ -944,11 +944,11 @@ void lazy_c_seqt::collect_reads_and_writes(
         shared_event shared_event{s_it,  labels[s_it->source.thread_nr], s_it->source.thread_nr};
          labels[s_it->source.thread_nr]++;
 
-        log.warning()
-          << "Thread: " << shared_event.s_it->source.thread_nr
-          << "\tRead: " << shared_event.label << "   \t"
-          << to_symbol_expr(shared_event.s_it->ssa_lhs).get_identifier()
-          << "\tL" << shared_event.label << messaget::eom;
+        // log.warning()
+        //   << "Thread: " << shared_event.s_it->source.thread_nr
+        //   << "\tRead: " << shared_event.label << "   \t"
+        //   << to_symbol_expr(shared_event.s_it->ssa_lhs).get_identifier()
+        //   << "\tL" << shared_event.label << messaget::eom;
 
         shared_events.emplace_back(shared_event);
 
@@ -957,9 +957,9 @@ void lazy_c_seqt::collect_reads_and_writes(
       }
       else
       {
-        log.warning() << "Skipping: " << "Thread: " << s_it->source.thread_nr
-                      << "\tRead: " << s_it->source.pc->location_number
-                      << messaget::eom;
+        // log.warning() << "Skipping: " << "Thread: " << s_it->source.thread_nr
+        //               << "\tRead: " << s_it->source.pc->location_number
+        //               << messaget::eom;
       }
     }
   }
