@@ -160,15 +160,27 @@ void lazy_c_seqt::check_shared_event(
     symex_target_equationt &equation/*,
     message_handlert &message_handler*/)
 {
-  //messaget log{message_handler};
-
-  //log.warning() << "-------------------CHECKING EVENTS--------------------------"
-  //              << messaget::eom;
+  // messaget log{message_handler};
+  //
+  // log.warning() << "-------------------CHECKING EVENTS--------------------------"
+  //                << messaget::eom;
 
   symex_target_equationt temp_equation{equation};
   temp_equation.clear();
 
   auto ssa_steps = equation.SSA_steps;
+  std::unordered_set<std::size_t> assignments;
+
+  for(symex_target_equationt::SSA_stepst::const_iterator s_it =
+        ssa_steps.begin();
+      s_it != ssa_steps.end();
+      s_it++)
+  {
+    if (s_it->is_assignment())
+    {
+      assignments.insert(s_it->ssa_lhs.hash());
+    }
+  }
 
   for(symex_target_equationt::SSA_stepst::const_iterator s_it =
         ssa_steps.begin();
@@ -178,21 +190,9 @@ void lazy_c_seqt::check_shared_event(
     bool assigned = true;
     if (s_it->is_shared_write())
     {
-      assigned = false;
-
-      auto step = s_it;
-      step++;
-
-      for(symex_target_equationt::SSA_stepst::const_iterator iter =
-        step;
-      iter != ssa_steps.end();
-      iter++)
+      if (assignments.count(s_it->ssa_lhs.hash()) == 0)
       {
-        if (iter->ssa_lhs == s_it->ssa_lhs)
-        {
-          assigned = true;
-          break;
-        }
+        assigned = false;
       }
     }
     if (!assigned)
