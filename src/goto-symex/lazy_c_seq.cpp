@@ -679,9 +679,9 @@ void lazy_c_seqt::collect_reads_and_writes(
 
     if(s_it->is_atomic_begin())
     {
-      //log.warning() << "ATOMIC BEGIN: " << labels[s_it->source.thread_nr] << messaget::eom;
       labels[s_it->source.thread_nr]++;
-      guards[labels[s_it->source.thread_nr]] = s_it->guard;
+      guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
+      //log.warning() << "ATOMIC BEGIN: " << labels[s_it->source.thread_nr] << messaget::eom;
     }
 
     if(s_it->is_atomic_end())
