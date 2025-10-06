@@ -81,11 +81,9 @@ private:
   std::vector<enabled> enabled_vector;
   std::vector<cs> cs_vector;
   std::vector<reach> reach_vector;
-  std::vector<std::pair<unsigned, std::pair<std::size_t, std::size_t>>>
-    atomic_sections; // < thread < start_label, end_label > >
   std::unordered_map<unsigned, unsigned> n_bit;
   std::unordered_map<unsigned, unsigned> labels;
-  std::unordered_map<unsigned, exprt> guards;
+  std::unordered_map<unsigned,std::unordered_map<unsigned, exprt>> guards; // < thread, < label, guard > >
 
   void handling_active_threads(
     symex_target_equationt &equation/*,

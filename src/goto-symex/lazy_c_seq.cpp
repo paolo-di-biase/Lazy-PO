@@ -324,7 +324,7 @@ void lazy_c_seqt::create_cs_constraint(
         //log.warning() << format(active_expr) << messaget::eom;
         equation.constraint(active_expr, "cs constraint", equation.SSA_steps.begin()->source);
 
-        and_exprt expr_5{enabled, guards[label]};
+        and_exprt expr_5{enabled, guards[thread].at(label)};
         equal_exprt constraint{exec, expr_5};
         simplify(constraint, ns);
         //log.warning() << format(constraint) << messaget::eom;
@@ -667,7 +667,7 @@ void lazy_c_seqt::collect_reads_and_writes(
       else
         num++;
       shared_event shared_event{s_it, labels[s_it->source.thread_nr], num, s_it->source.thread_nr};
-      guards[labels[s_it->source.thread_nr]] = s_it->guard;
+      guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
 
       // log.warning() << "Thread: " << shared_event.s_it->source.thread_nr
       //               << "\tBlocking statement: " << shared_event.label << "\t"
@@ -688,7 +688,7 @@ void lazy_c_seqt::collect_reads_and_writes(
     {
       //log.warning() << "ATOMIC END: " <<  labels[s_it->source.thread_nr] << messaget::eom;
       labels[s_it->source.thread_nr]++;
-      guards[labels[s_it->source.thread_nr]] = s_it->guard;
+      guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
       num = 0;
     }
 
@@ -701,7 +701,7 @@ void lazy_c_seqt::collect_reads_and_writes(
         else
           num++;
         shared_event shared_event{s_it,  labels[s_it->source.thread_nr], num, s_it->source.thread_nr};
-        guards[labels[s_it->source.thread_nr]] = s_it->guard;
+        guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
 
         // log.warning()
         //   << "Thread: " << shared_event.s_it->source.thread_nr
@@ -732,7 +732,7 @@ void lazy_c_seqt::collect_reads_and_writes(
         else
           num++;
         shared_event shared_event{s_it,  labels[s_it->source.thread_nr], num, s_it->source.thread_nr};
-        guards[labels[s_it->source.thread_nr]] = s_it->guard;
+        guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
 
         // log.warning()
         //   << "Thread: " << shared_event.s_it->source.thread_nr
