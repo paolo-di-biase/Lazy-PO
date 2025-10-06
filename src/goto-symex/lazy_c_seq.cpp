@@ -686,10 +686,10 @@ void lazy_c_seqt::collect_reads_and_writes(
 
     if(s_it->is_atomic_end())
     {
-      //log.warning() << "ATOMIC END: " <<  labels[s_it->source.thread_nr] << messaget::eom;
       labels[s_it->source.thread_nr]++;
       guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
       num = 0;
+      //log.warning() << "ATOMIC END: " <<  labels[s_it->source.thread_nr] << messaget::eom;
     }
 
     if(s_it->is_shared_write()) {
