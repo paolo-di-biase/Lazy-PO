@@ -275,7 +275,7 @@ void lazy_c_seqt::create_cs_constraint(
         previous = cs;
       }
     }
-    for (size_t label = 1; label < labels[thread]; label++)
+    for (size_t label = 1; label <= labels[thread]; label++)
     {
       for(size_t round = 1; round <= rounds; ++round)
       {
@@ -662,7 +662,10 @@ void lazy_c_seqt::collect_reads_and_writes(
 
     if(s_it->is_assert() || s_it->is_assume())
     {
-      if (s_it->atomic_section_id == 0 || (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
+      if (prev == ssa_steps.begin() ||
+          (s_it->atomic_section_id == 0 && s_it->source.pc->source_location() != prev->source.pc->source_location()) ||
+          (s_it->atomic_section_id == 0 && s_it->source.pc->source_location() == prev->source.pc->source_location() && s_it->guard != prev->guard) ||
+          (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
         labels[s_it->source.thread_nr]++;
       else
         num++;
@@ -696,7 +699,10 @@ void lazy_c_seqt::collect_reads_and_writes(
       // TODO: this may be too restrictive
       if(can_cast_expr<symbol_exprt>(s_it->ssa_lhs))
       {
-        if (s_it->atomic_section_id == 0 || (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
+        if (prev == ssa_steps.begin() ||
+          (s_it->atomic_section_id == 0 && s_it->source.pc->source_location() != prev->source.pc->source_location()) ||
+          (s_it->atomic_section_id == 0 && s_it->source.pc->source_location() == prev->source.pc->source_location() && s_it->guard != prev->guard) ||
+          (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
           labels[s_it->source.thread_nr]++;
         else
           num++;
@@ -727,7 +733,10 @@ void lazy_c_seqt::collect_reads_and_writes(
       // TODO: this may be too restrictive
       if(can_cast_expr<symbol_exprt>(s_it->ssa_lhs))
       {
-        if (s_it->atomic_section_id == 0 || (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
+        if (prev == ssa_steps.begin() ||
+          (s_it->atomic_section_id == 0 && s_it->source.pc->source_location() != prev->source.pc->source_location()) ||
+          (s_it->atomic_section_id == 0 && s_it->source.pc->source_location() == prev->source.pc->source_location() && s_it->guard != prev->guard) ||
+          (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
           labels[s_it->source.thread_nr]++;
         else
           num++;
