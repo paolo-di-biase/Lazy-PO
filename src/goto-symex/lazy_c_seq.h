@@ -25,12 +25,14 @@ private:
   {
     symex_target_equationt::SSA_stepst::const_iterator s_it;
     unsigned label;
+    unsigned num;
     unsigned thread;
   };
   struct lazy_variable
   {
     std::size_t round;
     unsigned label;
+    unsigned num;
     unsigned thread;
     symbol_exprt symbol;
   };
@@ -83,16 +85,13 @@ private:
     atomic_sections; // < thread < start_label, end_label > >
   std::unordered_map<unsigned, unsigned> n_bit;
   std::unordered_map<unsigned, unsigned> labels;
+  std::unordered_map<unsigned, exprt> guards;
 
   void handling_active_threads(
     symex_target_equationt &equation/*,
     message_handlert &message_handler*/);
 
   void check_shared_event(
-    symex_target_equationt &equation/*,
-    message_handlert &message_handler*/);
-
-  void handling_atomic_sections(
     symex_target_equationt &equation/*,
     message_handlert &message_handler*/);
 
@@ -111,6 +110,7 @@ private:
   std::optional<symbol_exprt> previous_shared(
     irep_idt variable,
     unsigned label,
+    unsigned num,
     unsigned thread,
     std::size_t round);
 
