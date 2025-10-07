@@ -663,7 +663,10 @@ void lazy_c_seqt::collect_reads_and_writes(
     if(s_it->is_assert() || s_it->is_assume())
     {
       if (s_it->atomic_section_id == 0 || (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
+      {
         labels[s_it->source.thread_nr]++;
+        num = 0;
+      }
       else
         num++;
       shared_event shared_event{s_it, labels[s_it->source.thread_nr], num, s_it->source.thread_nr};
@@ -675,6 +678,7 @@ void lazy_c_seqt::collect_reads_and_writes(
 
       this->blocking_events.emplace_back(shared_event);
       shared_events.emplace_back(shared_event);
+      prev = s_it;
     }
 
     if(s_it->is_atomic_begin())
@@ -697,7 +701,10 @@ void lazy_c_seqt::collect_reads_and_writes(
       if(can_cast_expr<symbol_exprt>(s_it->ssa_lhs))
       {
         if (s_it->atomic_section_id == 0 || (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
+        {
           labels[s_it->source.thread_nr]++;
+          num = 0;
+        }
         else
           num++;
         shared_event shared_event{s_it,  labels[s_it->source.thread_nr], num, s_it->source.thread_nr};
@@ -713,6 +720,7 @@ void lazy_c_seqt::collect_reads_and_writes(
           .emplace_back(shared_event);
         this->global_variables.emplace(
           shared_event.s_it->ssa_lhs.get_l1_object_identifier());
+        prev = s_it;
       }
       else
       {
@@ -728,7 +736,10 @@ void lazy_c_seqt::collect_reads_and_writes(
       if(can_cast_expr<symbol_exprt>(s_it->ssa_lhs))
       {
         if (s_it->atomic_section_id == 0 || (s_it->atomic_section_id != 0 && prev->guard != s_it->guard))
+        {
           labels[s_it->source.thread_nr]++;
+          num = 0;
+        }
         else
           num++;
         shared_event shared_event{s_it,  labels[s_it->source.thread_nr], num, s_it->source.thread_nr};
@@ -744,6 +755,7 @@ void lazy_c_seqt::collect_reads_and_writes(
 
         this->reads[shared_event.s_it->ssa_lhs.get_l1_object_identifier()].emplace_back(shared_event);
         this->global_variables.insert(shared_event.s_it->ssa_lhs.get_l1_object_identifier());
+        prev = s_it;
       }
       else
       {
@@ -752,7 +764,6 @@ void lazy_c_seqt::collect_reads_and_writes(
         //               << messaget::eom;
       }
     }
-    prev = s_it;
   }
 }
 
