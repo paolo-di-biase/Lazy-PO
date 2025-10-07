@@ -275,7 +275,7 @@ void lazy_c_seqt::create_cs_constraint(
         previous = cs;
       }
     }
-    for (size_t label = 1; label < labels[thread]; label++)
+    for (size_t label = 1; label <= labels[thread]; label++)
     {
       for(size_t round = 1; round <= rounds; ++round)
       {
