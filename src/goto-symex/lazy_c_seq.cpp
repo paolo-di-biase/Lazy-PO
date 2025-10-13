@@ -34,6 +34,8 @@ void lazy_c_seqt::operator()(
 
   create_cs_constraint(equation/*, message_handler*/);
 
+  handling_atomic_sections(equation/*, message_handler*/);
+
   handling_guards(equation/*, message_handler*/);
 
 }
@@ -330,6 +332,45 @@ void lazy_c_seqt::create_cs_constraint(
         //log.warning() << format(constraint) << messaget::eom;
         equation.constraint(constraint, "cs constraint", equation.SSA_steps.begin()->source);
       }
+    }
+  }
+}
+
+void lazy_c_seqt::handling_atomic_sections(
+  symex_target_equationt &equation/*,
+  message_handlert &message_handler*/)
+{
+  //messaget log{message_handler};
+
+  //log.warning()
+  //  << "-------------------ATOMIC SECTIONS--------------------------"
+  //  << messaget::eom;
+
+  for(auto atomic_section : atomic_sections)
+  {
+    // log.warning() << "atomic section Thread " << atomic_section.first << ": L"
+    //               << atomic_section.second.first << " : L"
+    //               << atomic_section.second.second << messaget::eom;
+    exprt constraint;
+
+    for(std::size_t round = 1; round <= rounds; round++)
+    {
+      symbol_exprt cs = create_cs_symbol(atomic_section.first, round);
+      constraint = or_exprt{
+        less_than_or_equal_exprt{
+          cs,
+          from_integer(
+            atomic_section.second.first,
+            unsignedbv_typet{n_bit[atomic_section.first]})},
+        greater_than_or_equal_exprt{
+          cs,
+          from_integer(
+            atomic_section.second.second,
+            unsignedbv_typet{n_bit[atomic_section.first]})}};
+
+      //log.warning() << format(constraint) << messaget::eom;
+      equation.constraint(
+        constraint, "atomic constraint", equation.SSA_steps.begin()->source);
     }
   }
 }
@@ -683,6 +724,8 @@ void lazy_c_seqt::collect_reads_and_writes(
 
     if(s_it->is_atomic_begin())
     {
+      atomic_sections.emplace_back(
+        s_it->source.thread_nr, std::pair<unsigned,unsigned>(labels[s_it->source.thread_nr], NULL));
       labels[s_it->source.thread_nr]++;
       guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
       //log.warning() << "ATOMIC BEGIN: " << labels[s_it->source.thread_nr] << messaget::eom;
@@ -690,6 +733,7 @@ void lazy_c_seqt::collect_reads_and_writes(
 
     if(s_it->is_atomic_end())
     {
+      atomic_sections.back().second.second =  labels[s_it->source.thread_nr];
       labels[s_it->source.thread_nr]++;
       guards[s_it->source.thread_nr].emplace(std::pair(labels[s_it->source.thread_nr], s_it->guard));
       num = 0;
