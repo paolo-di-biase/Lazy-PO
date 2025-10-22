@@ -408,7 +408,7 @@ int cbmc_parse_optionst::doit()
 {
   if(cmdline.isset("version"))
   {
-    std::cout << "4.1.0" << '\n';
+    std::cout << "1.0" << '\n';
     return CPROVER_EXIT_SUCCESS;
   }
 
@@ -890,14 +890,20 @@ void cbmc_parse_optionst::help()
   // clang-format off
 
   // __SZH_ADD_BEGIN__
-  std::cout << "\n" << banner_string("Deagle", "4.1.0") << '\n'
-            << align_center_with_border("Zhihang Sun, Pei Wang, Hongyu Fan, and Fei HE") << '\n'
-            << align_center_with_border("School of Software, Tsinghua University") << '\n'
-            << align_center_with_border("hefei@tsinghua.edu.cn") << '\n';
+  std::cout << "\n" << banner_string("Iekke", "1.0") << '\n'
+            << align_center_with_border("Paolo Di Biase") << '\n'
+            << align_center_with_border("Unimol") << '\n'
+            << align_center_with_border("paolodibiase1@gmail.com") << '\n';
   
   std::cout << "which contains:\n";
 
   // __SZH_ADD_END__
+
+  std::cout << "\n" << banner_string("Deagle", "4.1.0") << '\n'
+          << align_center_with_border("Copyright (C) 2021-2031") << '\n'
+          << align_center_with_border("Zhihang Sun, Pei Wang, Hongyu Fan, and Fei HE") << '\n'
+          << align_center_with_border("School of Software, Tsinghua University") << '\n'
+          << align_center_with_border("hefei@tsinghua.edu.cn") << '\n';
 
   std::cout << '\n' << banner_string("CBMC", CBMC_VERSION) << '\n'
             << align_center_with_border("Copyright (C) 2001-2018") << '\n'
