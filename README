@@ -6,9 +6,6 @@ Lazy-PO is the approach used to build a tool called Iekke.
 Iekke is SAT-based concurrent program verification tool. It is built on top of Deagle (front-end) and MiniSAT-2.2.1 (back-end). The basic idea of Iekke is to simulate sequentialization using partial order constraints, establishing a number of rounds.
 The source code of Iekke is available on https://github.com/paolo-di-biase/Lazy-PO.
 
-## Deagle's Capability
-For programs under simple memory models SC, TSO, and PSO, Deagle verifies user-defined assertions, detecting data races, memory failures (such as null pointer dereferences), and overflows.
-
 ## Installation
 ### Dependencies
 - g++
