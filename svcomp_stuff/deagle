@@ -83,7 +83,7 @@ def generate_unwindset(loops_name, loops_limit):
     return unwindset
 
 if len(sys.argv) < 2 or sys.argv[1] == "-v" or sys.argv[1] == "--version":
-    print("4.1.0")
+    print("1.0")
     sys.exit(0)
 
 if sys.argv[1] == "--witness":
