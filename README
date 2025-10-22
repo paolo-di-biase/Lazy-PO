@@ -1,8 +1,10 @@
-# Deagle V4.1.0
+Lazy-PO is the approach used to build a tool called Iekke.
+
+# Iekke V1.0
 
 ## Introduction
-Deagle is an SMT-based concurrent program verification tool. It is built on top of CBMC-5 (front-end) and MiniSAT-2.2.1 (back-end). The basic idea of Deagle is to integrate into the SAT solver an ordering consistency theory that handles ordering relations over shared variable accesses in the program. The front-end encodes the input program into an extended Boolean formula that contains ordering constraints. The back-end is reinforced with a solver for the ordering consistency theory.
-The source code of Deagle is available on https://github.com/thufv/deagle.
+Iekke is SAT-based concurrent program verification tool. It is built on top of Deagle (front-end) and MiniSAT-2.2.1 (back-end). The basic idea of Iekke is to simulate sequentialization using partial order constraints, establishing a number of rounds.
+The source code of Iekke is available on https://github.com/paolo-di-biase/Lazy-PO.
 
 ## Deagle's Capability
 For programs under simple memory models SC, TSO, and PSO, Deagle verifies user-defined assertions, detecting data races, memory failures (such as null pointer dereferences), and overflows.
